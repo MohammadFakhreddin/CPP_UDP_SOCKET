@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+
 
 #include "FoundationSocketBackend.hpp"
 #include "BedrockAssert.hpp"
@@ -28,7 +30,15 @@ int main(){
             received_data_port
         ); MFA_ASSERT(received_bytes > 0);
         received_message[received_bytes] = '\0';
-        std::cout << "Received message is " << received_message << std::endl;
+        std::cout   << "---------------------------------------------" << std::endl
+                    << "Received message: " << received_message << std::endl
+                    << "IpAddress: "
+                        << std::to_string(received_data_address.a) << "."
+                        << std::to_string(received_data_address.b) << "."
+                        << std::to_string(received_data_address.c) << "."
+                        << std::to_string(received_data_address.d) << std::endl
+                    << "Port: " << received_data_port << std::endl
+                    << "---------------------------------------------" << std::endl;
     }
     MFA::SocketBackend::DestroySocket(socket);
     MFA::SocketBackend::Shutdown();
