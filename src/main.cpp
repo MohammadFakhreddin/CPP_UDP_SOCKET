@@ -4,9 +4,17 @@
 #include "BedrockAssert.hpp"
 
 int main(){
-    std::cout << "Sup" << std::endl;
     auto const init_socket_result = MFA::SocketBackend::Init();
     MFA_ASSERT(true == init_socket_result); MFA_CONSUME_VAR(init_socket_result);
+    auto const socket = MFA::SocketBackend::CreateSocket(3000);
+    MFA_ASSERT(socket.valid()); MFA_CONSUME_VAR(socket);
+    auto const address = MFA::SocketBackend::CreateAddress(socket, {127,0,0,1});
+    char message[100] = "Hello from other side";
+    auto const send_packet_result = MFA::SocketBackend::SendPacked(
+        socket, 
+        {message, strlen(message)}, 
+        address
+    ); MFA_ASSERT(true == send_packet_result); MFA_CONSUME_VAR(send_packet_result);
     MFA::SocketBackend::Shutdown();
     return 0;
 }
