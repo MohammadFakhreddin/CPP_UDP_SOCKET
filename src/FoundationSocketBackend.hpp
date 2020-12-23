@@ -32,6 +32,8 @@ void Shutdown();
 
 SocketHandle CreateSocket(Port port);
 
+bool DestroySocket(SocketHandle const & socket);
+
 struct IPAddress {
     U8 a,b,c,d;
 };
@@ -51,7 +53,7 @@ bool SendPacked(
     SocketAddress const & address
 );
 
-bool TryReceiveData(
+U32 TryReceiveData(
     SocketHandle const & socket,
     Blob const & out_buffer,
     IPAddress & out_address,

@@ -17,7 +17,7 @@ void Shutdown() {
 #endif
 }
 
-SocketHandle CreateSocket(U16 const port) {
+SocketHandle CreateSocket(Port const port) {
     auto const handle = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(handle <= 0) {
         printf( "Failed to create socket\n" );
@@ -53,6 +53,20 @@ SocketHandle CreateSocket(U16 const port) {
 #endif
     return {handle, port};
 }
+
+bool DestroySocket(SocketHandle const & socket) {
+    bool ret = false;
+    if(socket.valid()) {
+#ifdef __PLATFORM_WIN__
+        closesocket( socket.handle );
+#else
+    close( socket.handle );
+#endif
+        ret = true;
+    }
+    return ret;
+}
+
 
 SocketAddress CreateAddress(SocketHandle const & socket, IPAddress const & ip_address) {
     if(socket.valid()) {
@@ -91,6 +105,39 @@ bool SendPacked(
         }
     }
     return ret;
+}
+
+U32 TryReceiveData(
+    SocketHandle const & socket,
+    Blob const & out_buffer,
+    IPAddress & out_address,
+    Port & out_port
+) {
+#ifdef __PLATFORM_WIN__
+    typedef int socklen_t;
+#endif
+    sockaddr_in from;
+    socklen_t fromLength = sizeof( from );
+    auto const received_bytes = recvfrom(
+        socket.handle, 
+        reinterpret_cast<char *>(out_buffer.ptr), 
+        static_cast<I32>(out_buffer.len), 
+        0, 
+        reinterpret_cast<sockaddr *>(&from), 
+        &fromLength 
+    );
+    if(received_bytes > 0) {
+        unsigned int from_address = ntohl( from.sin_addr.s_addr );
+        out_address.a = static_cast<U8>(from_address >> 24);
+        from_address = from_address & 000'111'111'111;
+        out_address.b = static_cast<U8>(from_address >> 16);
+        from_address = from_address & 000'000'111'111;
+        out_address.c = static_cast<U8>(from_address >> 8);
+        from_address = from_address & 000'000'000'111;
+        out_address.d = static_cast<U8>(from_address); 
+        out_port = ntohs( from.sin_port );
+    }
+    return received_bytes;
 }
 
 
