@@ -1,15 +1,17 @@
 #include "BedrockPlatforms.hpp"
 
 #if defined(__PLATFORM_WIN__)
-  #include <windows.h>
+#include <windows.h>
 #elif defined(__PLATFORM_MAC__)
-  #include <CoreGraphics/CGDisplayConfiguration.h>
+#include <CoreGraphics/CGDisplayConfiguration.h>
 #elif defined(__PLATFORM_LINUX__)
   // TODO
 #endif
 
 namespace MFA::Platforms {
 
+// This code is not needed for this project
+#if 0
 using ScreenSizeType = uint32_t;
 ScreenInfo ComputeScreenSize() {
     ScreenInfo ret {};
@@ -20,7 +22,7 @@ ScreenInfo ComputeScreenSize() {
         ret.screen_height = static_cast<ScreenSizeType>(real_screen_height);
         ret.valid = true;
     #elif defined(__PLATFORM_MAC__)
-        auto main_display_id = CGMainDisplayID();	
+        auto const main_display_id = CGMainDisplayID();	
         unsigned int real_screen_width = CGDisplayPixelsWide(main_display_id);
         unsigned int real_screen_height = CGDisplayPixelsHigh(main_display_id);
         ret.screen_width = static_cast<ScreenSizeType>(real_screen_width);
@@ -31,5 +33,5 @@ ScreenInfo ComputeScreenSize() {
     #endif
     return ret;
 }
-
+#endif
 } // namespace MFA::Platforms

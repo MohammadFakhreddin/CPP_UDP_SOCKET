@@ -8,6 +8,7 @@
 #ifdef __PLATFORM_WIN__
 #include <winsock2.h>
 #else
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
@@ -16,6 +17,10 @@
 namespace MFA::SocketBackend {
 
 using Port = U32;
+
+#ifndef __PLATFORM_WIN__
+using SOCKET = U64;
+#endif
 
 struct SocketHandle {
     [[nodiscard]]

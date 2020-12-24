@@ -4,6 +4,12 @@
 #include <cstdio>
 #include <exception>        // std::terminate()
 
+#include "BedrockPlatforms.hpp"
+
+#ifndef __PLATFORM_WIN__
+#include <cassert>
+#endif
+
 #define MFA_OPT_ASSERT_TO_STDERR      1
 #define MFA_OPT_ASSERT_DEBUGBREAK     1
 #define MFA_OPT_ASSERT_TERMINATE      1
@@ -53,7 +59,7 @@ bool DoAssert (
     #endif
     
     #if defined(MFA_OPT_ASSERT_DEBUGBREAK)
-        __debugbreak();
+        DebugBreak();
     #endif
 
         if (should_terminate)
@@ -63,7 +69,11 @@ bool DoAssert (
 }
 
 void DebugBreak () {
+#ifdef __PLATFORM_WIN__
     __debugbreak();
+#else
+    assert(false);
+#endif
 }
 
 }

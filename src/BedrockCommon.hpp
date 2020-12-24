@@ -2,6 +2,7 @@
 #define BEDROCK_COMMON
 
 // This class was originally part of Yugen engine by Y.Zhian
+#include "BedrockPlatforms.hpp"
 
 #include <cstdint>
 

@@ -1,5 +1,7 @@
 #include "FoundationSocketBackend.hpp"
 
+#include "BedrockPlatforms.hpp"
+
 namespace MFA::SocketBackend {
 
 bool Init() {
@@ -48,10 +50,10 @@ SocketHandle CreateSocket(Port const port) {
                 O_NONBLOCK, 
                 nonBlocking ) == -1 ) {
         printf( "failed to set non-blocking\n" );
-        return false;
+        return {};
     }
 #endif
-    return {handle, port};
+    return {static_cast<SOCKET>(handle), port};
 }
 
 bool DestroySocket(SocketHandle const & socket) {
@@ -59,8 +61,11 @@ bool DestroySocket(SocketHandle const & socket) {
     if(socket.valid()) {
 #ifdef __PLATFORM_WIN__
         closesocket( socket.handle );
+#elif defined(__PLATFORM_MAC__)
+        // Based on https://www.cs.rutgers.edu/~pxk/rutgers/notes/sockets/
+        shutdown( socket.handle, SHUT_RDWR );
 #else
-    close( socket.handle );
+        close( socket.handle );
 #endif
         ret = true;
     }
@@ -118,7 +123,7 @@ U32 TryReceiveData(
 #endif
     sockaddr_in from;
     socklen_t fromLength = sizeof( from );
-    auto const received_bytes = recvfrom(
+    auto received_bytes = recvfrom(
         socket.handle, 
         reinterpret_cast<char *>(out_buffer.ptr), 
         static_cast<I32>(out_buffer.len), 
@@ -126,7 +131,7 @@ U32 TryReceiveData(
         reinterpret_cast<sockaddr *>(&from), 
         &fromLength 
     );
-    if(received_bytes > 0) {
+    if(received_bytes > 0 && received_bytes <= out_buffer.len) {
         unsigned int from_address = ntohl( from.sin_addr.s_addr );
         out_address.a = static_cast<U8>(from_address >> 24);
         from_address = from_address & 000'111'111'111;
@@ -136,6 +141,8 @@ U32 TryReceiveData(
         from_address = from_address & 000'000'000'111;
         out_address.d = static_cast<U8>(from_address); 
         out_port = ntohs( from.sin_port );
+    } else {
+        received_bytes = 0;
     }
     return received_bytes;
 }
